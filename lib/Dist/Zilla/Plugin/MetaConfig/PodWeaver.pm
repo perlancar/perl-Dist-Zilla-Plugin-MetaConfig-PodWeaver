@@ -2,17 +2,13 @@ package Dist::Zilla::Plugin::MetaConfig::PodWeaver;
 
 use 5.010001;
 use Moose;
-with 'Dist::Zilla::Role::Plugin';
-use namespace::autoclean;
-# VERSION
-__PACKAGE__->meta->make_immutable;
-
-# inject method
-package Dist::Zilla::Plugin::PodWeaver;
-use 5.010001;
-use Moose;
 with 'Dist::Zilla::Role::ConfigDumper';
-no warnings 'redefine';
+with 'Dist::Zilla::Role::Plugin';
+
+# VERSION
+
+use namespace::autoclean;
+
 sub dump_config {
     my $self = shift;
 
@@ -20,16 +16,17 @@ sub dump_config {
 
     #$dump->{_debug_inc} = \%INC;
 
-    #my $zilla  = $self->zilla;
-    #my $dzp_pw;
-    #for (@{ $zilla->plugins }) {
-    #    if ($_->isa("Dist::Zilla::Plugin::PodWeaver")) {
-    #        $dzp_pw = $_;
-    #        last;
-    #    }
-    #}
-    my $dzp_pw = $self;
+    my $zilla  = $self->zilla;
+    my $dzp_pw;
+    for (@{ $zilla->plugins }) {
+        say "D0:$_";
+        if ($_->isa("Dist::Zilla::Plugin::PodWeaver")) {
+            $dzp_pw = $_;
+            last;
+        }
+    }
 
+    say "D:$dzp_pw";
     if ($dzp_pw) {
         my $weaver   = $dzp_pw->weaver;
         $dump->{plugins} = [];
@@ -45,8 +42,8 @@ sub dump_config {
 
     return $dump;
 }
-__PACKAGE__->meta->make_immutable;
 
+__PACKAGE__->meta->make_immutable;
 1;
 # ABSTRACT: Dump more information about Pod::Weaver
 
@@ -61,7 +58,7 @@ In your F<dist.ini>:
 
 This plugin adds more information about Pod::Weaver configuration (currently:
 list of Pod::Weaver plugins and their versions) to be included in top-level
-C<X-Dist_Zilla> key of distmeta.
+C<X-Dist_Zilla> key of distmeta, under this plugin's config dump.
 
 
 =head1 SEE ALSO
