@@ -3,7 +3,6 @@ package Dist::Zilla::Plugin::MetaConfig::PodWeaver;
 use 5.010001;
 use Moose;
 with 'Dist::Zilla::Role::ConfigDumper';
-with 'Dist::Zilla::Role::Filegatherer';
 with 'Dist::Zilla::Role::Plugin';
 
 # VERSION
@@ -15,26 +14,30 @@ sub dump_config {
 
     my $dump = {};
 
-    $dump->{plugins} = [];
-    for (sort keys %INC) {
-        next unless m!^\APod/Weaver/Plugin/!;
-        no strict 'refs';
-        my $pkg = $_; $pkg =~ s!/!::!g; $pkg =~ s/\.pm\z//;
-        push @{ $dump->{plugins} }, {
-            class   => $pkg,
-            version => ${"$pkg\::VERSION"} // 0,
-        };
+    #$dump->{_debug_inc} = \%INC;
+
+    my $zilla  = $self->zilla;
+    my $dzp_pw;
+    for (@{ $zilla->plugins }) {
+        say "D0:$_";
+        if ($_->isa("Dist::Zilla::Plugin::PodWeaver")) {
+            $dzp_pw = $_;
+            last;
+        }
     }
 
-    $dump->{plugin_bundles} = [];
-    for (sort keys %INC) {
-        next unless m!^\APod/Weaver/PluginBundle/!;
-        no strict 'refs';
-        my $pkg = $_; $pkg =~ s!/!::!g; $pkg =~ s/\.pm\z//;
-        push @{ $dump->{plugin_bundles} }, {
-            class   => $pkg,
-            version => ${"$pkg\::VERSION"} // 0,
-        };
+    say "D:$dzp_pw";
+    if ($dzp_pw) {
+        my $weaver   = $dzp_pw->weaver;
+        $dump->{plugins} = [];
+        for my $plugin (@{ $weaver->plugins }) {
+            say "D:$plugin";
+            push @{ $dump->{plugins} }, {
+                class   => $plugin->meta->name,
+                name    => $plugin->plugin_name,
+                version => $plugin->VERSION,
+            };
+        }
     }
 
     return $dump;
@@ -55,7 +58,7 @@ In your F<dist.ini>:
 
 This plugin adds more information about Pod::Weaver configuration (currently:
 list of Pod::Weaver plugins and their versions) to be included in top-level
-C<X-Dist_Zilla> key of distmeta.
+C<X-Dist_Zilla> key of distmeta, under this plugin's config dump.
 
 
 =head1 SEE ALSO
