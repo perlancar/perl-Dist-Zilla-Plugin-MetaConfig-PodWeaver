@@ -19,19 +19,16 @@ sub dump_config {
     my $zilla  = $self->zilla;
     my $dzp_pw;
     for (@{ $zilla->plugins }) {
-        say "D0:$_";
         if ($_->isa("Dist::Zilla::Plugin::PodWeaver")) {
             $dzp_pw = $_;
             last;
         }
     }
 
-    say "D:$dzp_pw";
     if ($dzp_pw) {
         my $weaver   = $dzp_pw->weaver;
         $dump->{plugins} = [];
         for my $plugin (@{ $weaver->plugins }) {
-            say "D:$plugin";
             push @{ $dump->{plugins} }, {
                 class   => $plugin->meta->name,
                 name    => $plugin->plugin_name,
