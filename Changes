@@ -1,5 +1,10 @@
 Revision history for Dist-Zilla-Plugin-MetaConfig-PodWeaver
 
+0.02     2013-11-12 (SHARYANTO)
+
+         - No functional changes. Remove debug prints.
+
+
 0.01     2013-11-12 (SHARYANTO)
 
          - First release.
